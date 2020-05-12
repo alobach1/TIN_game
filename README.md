@@ -1,6 +1,6 @@
 # Uruchomienie:
 ```
-$ python python_client.py < port >
+$ python3 python_client.py < port >
 ```
 ## Klient łączy się z serwerem za pomoćą 3 wątków:
 ``` 

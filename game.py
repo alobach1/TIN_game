@@ -1,7 +1,7 @@
  
 class Player:
     def __init__(self):
-        self.state = 1
+        self.state = 2
 
     def get_state(self):
         return self.state

@@ -45,16 +45,15 @@ class Network:
         while True:
             m = self.tcp.recv(5)
             s,d,y = struct.unpack('1s2s2s',m)
-            self.height = int.from_bytes(d, byteorder='big')
-            self.height = self.height /100
-            self.weight = int.from_bytes(d, byteorder='big')
-            self.weight = self.weight/100
+            
             #print(s.decode('ascii'))
             #print(d.decode('ascii'))
             if (s.decode('ascii')=="S"):
-                print(str(self.weight))
-                print(str(self.height))
-                print("tut")
+                self.height = int.from_bytes(d, byteorder='big')
+                self.height = self.height /100
+                self.weight = int.from_bytes(y, byteorder='big')
+                self.weight = self.weight/100
+               
                 self.e.set()
             elif (str(s)=="E"):
                 self.l.set()
@@ -74,12 +73,7 @@ class Network:
             nr = int.from_bytes(nr, byteorder='big')
             x =int.from_bytes(x, byteorder='big')
             y = int.from_bytes(y, byteorder='big')
-            print(d)
-            print(self.id)
-            print(nr)
-            print(i)
-            print(x)
-            print(y)
+           
             return (d,nr,i,x,y)
         if(len==13):
             s = struct.Struct('1s 2s 1s 2s 2s 1s 2s 2s')
@@ -91,15 +85,7 @@ class Network:
             i1 = int.from_bytes(i1, byteorder='big')
             x1 =int.from_bytes(x1, byteorder='big')
             y1 = int.from_bytes(y1, byteorder='big')
-            print(d)
-            print(self.id)
-            print(nr)
-            print(i)
-            print(x)
-            print(y)
-            print(i1)
-            print(x1)
-            print(y1)
+           
             return (d,nr,i,x,y,i1,x1,y1)
         else:
             s = struct.Struct('1s 2s 1s  2s 2s 1s 2s 2s 1s 2s 2s')
@@ -114,12 +100,7 @@ class Network:
             i2 = int.from_bytes(i2, byteorder='big')
             x2 =int.from_bytes(x2, byteorder='big')
             y2 = int.from_bytes(y2, byteorder='big')
-            print(d)
-            print(self.id)
-            print(nr)
-            print(i)
-            print(x)
-            print(y)
+            
             return (d,nr,i,x,y,i1,x1,y1,i2,x2,y2)
         return
         
@@ -135,26 +116,22 @@ class Network:
         sprites1 = pygame.sprite.Group(Player(1,0,0,'yellow'))
         sprites2 = pygame.sprite.Group(Player(2,0,0,'green'))
         
-        
         clock = pygame.time.Clock()
         dt = 0
-
         while not self.l.isSet():
             clock.tick(30)
-            
         
-            
             for i in sprites:
                 if hasattr(i, 'x'):
-                    print(i.x)
+                    print("X: {0} Y: {1}".format(str(i.x),str(i.y)))
+                   
                     self.udp.sendto(i.get_packet(),self.addr)
-                    print('Sending state {0} ...'.format(str(i.get_packet())))
+                    
                 else:
                     continue
                 
             
             data, _ = self.udp.recvfrom(64)
-            print(data)
             
             w = self.unpackeging(len(data),data)
 
@@ -167,6 +144,8 @@ class Network:
  
                     else:
                         continue
+
+
             if len(data) > 13:
                 for sp in sprites2:
                     if hasattr(sp, 'x'):
@@ -176,6 +155,8 @@ class Network:
 
                     else:
                         continue
+
+
             for sp in sprites:
                 if hasattr(sp, 'x'):
                     sp.x = (w[3]/100)
@@ -185,24 +166,26 @@ class Network:
                     sp.drawing
                 else:
                     continue
+
             
             events = pygame.event.get()
             for e in events:
                 if e.type == pygame.QUIT:
                     return 
+
+
             sprites.update(events, dt)
             sprites1.update(events, dt)
             sprites2.update(events, dt)
+
             screen.fill((30, 30, 30))
             sprites.draw(screen)
             sprites1.draw(screen)
             sprites2.draw(screen)
+
             pygame.display.update()
             
-           
             
-
-            print('Receiving state {0}'.format(str(data)))
             
         
         self.udp.close()

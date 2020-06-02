@@ -11,3 +11,8 @@ $ python3 python_client.py < port >
  * **udp_thread**   -  przejmuje pakiety poprzez socket UDP od serwera o stanie gry
  * **tcp_sending**  -  wysyła pakiety do serwera poprzez socket TCP dla utrzymania połączenia
 
+# Branch:
+```
+master : bez użycia crc
+crc : z użyciem crc (nie działa)
+```

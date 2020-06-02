@@ -1,5 +1,8 @@
 import struct
 import numpy as np
+
+
+
 data = b'123'
 s = 'cBcB'
 p = '1s'
@@ -8,7 +11,9 @@ p = s.join(p)
 start = 0
 n= []
 arr = b'Y\x00\x00\xa6\xb8\xe0\xa6\x96\x00'
-print(arr[3:])
+print(arr[:-4])
+
+'''
 while True:
     start = arr.find(b'\x00', start)
     if start == -1:
@@ -17,7 +22,7 @@ while True:
     start += len(b'\x00')
 print(n)
 print(arr[3:])
-'''
+
 for i in range(len(arr)):
     n = arr.find(b'\x00')
     print(n)
@@ -37,11 +42,12 @@ print(splt[1].encode())
 
 
 packet = struct.pack('2s',b'-1')
-print(packet) 
+print(packet)
+ 
 #m = struct.unpack('1s B 1s B',packet)
 #print(m)
-'''
-'''
+
+
 #split
 spl = data.split(b'\x00') #xff better 
        
@@ -54,4 +60,4 @@ spl = data.split(b'\x00') #xff better
         print(len(data))
         print(l)
         print(o)
-        '''
+'''

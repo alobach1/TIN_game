@@ -5,12 +5,9 @@ import struct
 import pygame
 import numpy as np
 import random
-import codecs
 import parsing
 import crypt
 import zlib 
-import crcmod
-import binascii
 import sys
 
 class Network:
@@ -33,7 +30,7 @@ class Network:
         self.height = 600 
         self.weight = 600 # width
         self.points = 0 # max points
-        self.score = 0  # score of player
+        # self.score = 0  # score of player
         self.winner = 0 # who wins in game
         self.key = 0
         
@@ -95,8 +92,6 @@ class Network:
         screen = pygame.display.set_mode((int(self.weight), int(self.weight)))
         font = pygame.font.SysFont("comicsans", 80)
         score = pygame.font.SysFont("comicsans", 30, True)
-        # visibility ?
-        # szyfrowanie ?
         
         projectiles = pygame.sprite.Group()
         players = pygame.sprite.Group()

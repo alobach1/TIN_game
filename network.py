@@ -46,33 +46,12 @@ class Network:
 
 
     def udp_checking(self,ide):
-        #ide = ide.decode()
-        #print(type(ide))
-        #i = struct.unpack('1s1s')
-        #print('Game id : {0}'.format(i))
-        #print(i[1])
-        #self.id = i[1]
-        #print(type(crc))
-        #print(type(i[0]))
-        #print(type(i[1]))
-        #packet = bytearray(ide)
-        s = struct.Struct('cc')
-        p,l = s.unpack(ide)
-        print(len(ide))
-        print(p)
-        print(l)
-        crc = binascii.crc32(struct.pack('cc',p,l))
+        print('Game id : {0}'.format(ide.decode()))
+        crc = binascii.crc32(ide)
         crc = crc % (1<<32)
-        print(sys.getsizeof(crc))
-        #print(len(hex(crc)))
-        #packet = ide.join(crc)
-        #print(len(packet))
-        #print(str(len(crc)))
-        packet = struct.pack('ccI',p,l,crc)
-        #struct.unpack('ccI', packet)
-        print(sys.getsizeof(packet))
+        packet = struct.pack('!2sI',ide,crc)
         while not self.e.isSet():
-            self.udp.sendto(hex(crc),self.addr)
+            self.udp.sendto(packet,self.addr)
 
     def tcp_thread(self):
         self.t3.start()

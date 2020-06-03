@@ -24,7 +24,8 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(self.x, self.y))
         self.pos = pygame.Vector2(self.rect.center)
         crc = self.coun_crc(struct.pack('cB',b'T',0))
-        self.packet = struct.pack('cBI',b'T',0,crc)
+        crc = crc % (1<<32)
+        self.packet = struct.pack('!cBI',b'T',0,crc)
         
     def coun_crc(self, t):
         crc = zlib.crc32(t)
@@ -35,42 +36,49 @@ class Player(pygame.sprite.Sprite):
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_SPACE:
                     crc = self.coun_crc(struct.pack('cB',b'Z',int(self.angle*255/360)))
-                    self.packet = struct.pack('cBI',b'Z',int(self.angle*255/360),crc)
+                    crc = crc % (1<<32)
+                    self.packet = struct.pack('!cBI',b'Z',int(self.angle*255/360),crc)
                     
             if e.type == pygame.KEYUP:
                 crc = self.coun_crc(struct.pack('cB',b'T',0))
-                self.packet = struct.pack('cBI',b'T',0,crc)
+                crc = crc % (1<<32)
+                self.packet = struct.pack('!cBI',b'T',0,crc)
 
 
         pressed = pygame.key.get_pressed()  # :
         if pressed[pygame.K_w] and self.y > 0 :
             self.angle = 270
             crc = self.coun_crc(struct.pack('cB',b'T',1))
-            self.packet = struct.pack('cBI',b'T',1,crc)
+            crc = crc % (1<<32)
+            self.packet = struct.pack('!cBI',b'T',1,crc)
             
             if pressed[pygame.K_d]:
                 self.angle = 315
                 crc = self.coun_crc(struct.pack('cB',b'T',2))
-                self.packet = struct.pack('cBI',b'T',2,crc)
+                crc = crc % (1<<32)
+                self.packet = struct.pack('!cBI',b'T',2,crc)
 
             elif pressed[pygame.K_a]:
                 self.angle = 225
                 crc = self.coun_crc(struct.pack('cB',b'T',8))
-                self.packet = struct.pack('cBI',b'T',8,crc)     
+                crc = crc % (1<<32)
+                self.packet = struct.pack('!cBI',b'T',8,crc)     
             
 
 
         if pressed[pygame.K_a] and self.x > 0 :
             self.angle = 180
             crc = self.coun_crc(struct.pack('cB',b'T',7))
-            self.packet = struct.pack('cBI',b'T',7,crc)
+            crc = crc % (1<<32)
+            self.packet = struct.pack('!cBI',b'T',7,crc)
 
 
 
         if pressed[pygame.K_d] and self.x < 600:
             self.angle = 0
             crc = self.coun_crc(struct.pack('cB',b'T',3))
-            self.packet =struct.pack('cBI',b'T',3,crc)
+            crc = crc % (1<<32)
+            self.packet =struct.pack('!cBI',b'T',3,crc)
         
 
 
@@ -78,30 +86,35 @@ class Player(pygame.sprite.Sprite):
         if pressed[pygame.K_s] and self.y < 600:
             self.angle = 90
             crc = self.coun_crc(struct.pack('cB',b'T',5))
-            self.packet = struct.pack('cBI',b'T',5,crc)
+            crc = crc % (1<<32)
+            self.packet = struct.pack('!cBI',b'T',5,crc)
             
             if pressed[pygame.K_d]:
                 self.angle = 45
                 crc = self.coun_crc(struct.pack('cB',b'T',4))
-                self.packet = struct.pack('cBI',b'T',4,crc)
+                crc = crc % (1<<32)
+                self.packet = struct.pack('!cBI',b'T',4,crc)
 
             elif pressed[pygame.K_a]:
                 self.angle = 135
                 crc = self.coun_crc(struct.pack('cB',b'T',6))
-                self.packet = struct.pack('cBI',b'T',6,crc)
+                crc = crc % (1<<32)
+                self.packet = struct.pack('!cBI',b'T',6,crc)
 
             
 
         if pressed[pygame.K_LEFT] and self.angle < 360:
             self.angle += 3
             crc = self.coun_crc(struct.pack('cB',b'T',0))
-            self.packet = struct.pack('cBI',b'T',0,crc)
+            crc = crc % (1<<32)
+            self.packet = struct.pack('!cBI',b'T',0,crc)
            
         
         if pressed[pygame.K_RIGHT] and self.angle > 0 :
             self.angle -= 3
             crc = self.coun_crc(struct.pack('cB',b'T',0))
-            self.packet = struct.pack('cBI',b'T',0,crc)
+            crc = crc % (1<<32)
+            self.packet = struct.pack('!cBI',b'T',0,crc)
          
         self.drawing()
         

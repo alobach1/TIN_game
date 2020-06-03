@@ -18,8 +18,8 @@ crc : z użyciem crc
 ```
 # Moduły:
 ```
-struct - pakowanie danych
-pygame - moduła do tworzenia gry
-zlib.crc32 - obliczanie crc
-cryptography - szyfrowanie symmetryczne, assymetryczne
+* **struct** - pakowanie danych
+* **pygame** - moduła do tworzenia gry
+* **zlib.crc32** - obliczanie crc
+* **cryptography** - szyfrowanie symmetryczne, assymetryczne
 ```

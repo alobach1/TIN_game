@@ -3,26 +3,32 @@ import struct
 import zlib 
 
 
+
 class Player(pygame.sprite.Sprite):
     def __init__(self,id,x,y,angle,color):
         super().__init__()
         self.id = id
-        self.points = 0
+        self.score = 0
         self.size = 32  
         self.visible = False
         self.angle = angle
         self.x = x
         self.y = y
         self.color = (255,255,255)
-
+        
         self.image = pygame.Surface((self.size, self.size))
         self.image.fill((0, 0, 0))
         self.image.set_colorkey((0, 0, 0))
-        pygame.draw.polygon(self.image, color, ((0, 0), (self.size, self.size/2), (0, self.size)))
+        pygame.draw.rect(self.image, color, (0, 0,self.size, self.size))
+        #pygame.draw.rect(self.image, (255,255,255), (self.x+32 ,self.y + 32 ,self.size-20, self.size-20))
         self.org_image = self.image.copy()
-        
         self.rect = self.image.get_rect(center=(self.x, self.y))
-        self.pos = pygame.Vector2(self.rect.center)
+        self.textrect = self.image.get_rect(center=(self.x , self.y ))
+        self.font = pygame.font.SysFont('comiscans',20)
+        self.text = self.font.render("Score : "+ str(self.score), 1, (255,255,255), True)
+   
+        
+        #self.pos = pygame.Vector2(self.rect.center)
         crc = self.coun_crc(struct.pack('cB',b'T',0))
         crc = crc % (1<<32)
         self.packet = struct.pack('!cBI',b'T',0,crc)
@@ -31,6 +37,10 @@ class Player(pygame.sprite.Sprite):
         crc = zlib.crc32(t)
         return crc
 
+    def render(self):
+        self.text = self.font.render(str(self.id) +". Score " +":"+str(self.score), 1, (255,255,255), True)
+
+
     def update(self, events, dt):
         for e in events:
             if e.type == pygame.KEYDOWN:
@@ -38,6 +48,7 @@ class Player(pygame.sprite.Sprite):
                     crc = self.coun_crc(struct.pack('cB',b'Z',int(self.angle*255/360)))
                     crc = crc % (1<<32)
                     self.packet = struct.pack('!cBI',b'Z',int(self.angle*255/360),crc)
+            
                     
             if e.type == pygame.KEYUP:
                 crc = self.coun_crc(struct.pack('cB',b'T',0))
@@ -120,10 +131,17 @@ class Player(pygame.sprite.Sprite):
         
             
     def drawing(self):
-        self.image = pygame.transform.rotate(self.org_image, 360 - self.angle)
+        
+        textsurface = pygame.font.SysFont('Arial', 12).render(str(self.id) , False, pygame.Color('black'))
+        t_rect = textsurface.get_rect()
+        self.image.blit(textsurface, t_rect )
+        t_rect.centerx, t_rect.centery = self.x , self.y
         self.rect = self.image.get_rect(center=(self.x, self.y))
-   
+    
 
+
+   
+    
     def get_packet(self):
         return self.packet
 

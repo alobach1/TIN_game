@@ -22,7 +22,6 @@ class Network:
         self.t2 = threading.Thread(target=self.udp_thread) # udp game
         self.t3 = threading.Thread(target = self.tcp_sending) # tcp connection  
         self.e = threading.Event() # udp checking event
-        self.l = threading.Event() # game end event
         self.q = threading.Event() # game quit
 
         self.id = 0  # client id of connection
@@ -31,8 +30,10 @@ class Network:
         self.weight = 600 # width
         self.points = 0 # max points
         # self.score = 0  # score of player
-        self.winner = 0 # who wins in game
+        self.winner = -1 # who wins in game
         self.key = 0
+        self.quit = True
+        self.num = 0
         
     def connect(self):
         try:
@@ -44,7 +45,7 @@ class Network:
 
     def udp_checking(self,ide):
         print('Game id : {0}'.format(ide.decode()))
-        crc = binascii.crc32(ide)
+        crc = zlib.crc32(ide)
         crc = crc % (1<<32)
         packet = struct.pack('!2sI',ide,crc)
         while not self.e.isSet():
@@ -52,31 +53,38 @@ class Network:
 
     def tcp_thread(self):
         self.t3.start()
-        while not self.q.isSet():
-            m = self.tcp.recv(2)
-            print(m)            
+        s = True
+        while True :
+            if self.q.isSet():
+                self.tcp.close()
+                break
+                        
+            m = self.tcp.recv(6)
+ 
+            if(len(m))==6: 
+                m = (m[:-4])          
             if len(m) == 2:
                 s, w = struct.unpack('1s1s',m)
-
-            print(len(m))
-            #print(s.decode('ascii'))
-            #print(d.decode('ascii'))
+            if len(m) == 0:
+                if self.q.isSet():
+                    self.tcp.close()
+                    break
 
             if (s.decode('ascii')=="S"):
-                print(len(m))
+                #print(len(m))
                 self.points = int.from_bytes(w,byteorder='big')
                 self.e.set()
 
             elif (s.decode('ascii')=="E"):
                 # napisz id zwyciezcy 
                 self.winner = int.from_bytes(w, byteorder = 'big') 
-                self.l.set()
-                # reset ?
+                print(self.winner)
+                
+                
                 print("[Game reset]")
             else:              
                 print("[ERROR]")
-        self.tcp.close()
-
+        
 
     # generate random color
     def rand_color(self):
@@ -85,34 +93,33 @@ class Network:
         b = random.randint(1,255)
         return (r,g,b)
 
+
+
     def udp_thread(self):
         print("[GAME STARTED]")
         print("[STARTED UDP]")
         pygame.init()
+
         screen = pygame.display.set_mode((int(self.weight), int(self.weight)))
-        font = pygame.font.SysFont("comicsans", 80)
-        score = pygame.font.SysFont("comicsans", 30, True)
-        
+        score = pygame.font.SysFont("comicsans", 25, True)
         projectiles = pygame.sprite.Group()
         players = pygame.sprite.Group()
+
         for i in range(8):
             players.add(Player(i,-20,-20,0,self.rand_color()))
-        for i in range(8):
+        for i in range(16):
             projectiles.add(Projectile(i,-20,-20))
 
 
         clock = pygame.time.Clock()
-        s = False
         dt = 0
-        while not s:
+        s = True
 
-        #while not self.l.isSet():
-            # if someone wins , print winner and players are resetted 
+        while s: 
             
-
             for i in players:
                 if hasattr(i,'x'):
-                    print("X: {0} Y: {1}".format(str(i.x),str(i.y)))
+                    #print("X: {0} Y: {1}".format(str(i.x),str(i.y)))
                     self.udp.sendto(i.get_packet(),self.addr)
                     break
                   
@@ -120,12 +127,9 @@ class Network:
             
             w, number_player, number_pr = parsing.unpackeging(len(data),data)  # parsing 
             
-            # writting received coordinates and player id from server
-            # '1s 2s 1s 1s 2s 2s 1s '
+            # writting received params for players and projectiles
+            self.num = number_player
             i = 0
-            self.gamerid = parsing.b_int(w[2])
-            self.score = parsing.b_int(w[3])
-
             for sp in players:
                 if number_player == 0:
                     i = i + 2
@@ -133,6 +137,7 @@ class Network:
                 else:
                     sp.id = parsing.b_int(w[i+2])
                     sp.score = parsing.b_int(w[i+3])
+                    sp.render()
                     sp.x = parsing.b_int(w[i+4])/100
                     sp.y = parsing.b_int(w[i+5])/100
                     number_player = number_player - 1
@@ -151,42 +156,53 @@ class Network:
             events = pygame.event.get()
             for e in events:
                 if e.type == pygame.QUIT:
-                    s = True
-                    return 
+                    self.udp.close()
+                    self.q.set()
+                    s = False
+                    print("Closing ...")     
+                    return
+                    
 
-            # player.id = w[2] and projectile.id = w[2] -> event update
-            for p in players:
-                p.update(events, dt)
-            for p in projectiles:
-                p.update(events,dt)
-        
-            # draw players
-            screen.fill((30, 30, 30))
-            
-            players.draw(screen)
-            projectiles.draw(screen)
-
-            text = score.render("Score : "+ str(self.score), 1, (255,255,255), True)
-            screen.blit(text, (self.weight - 110 , 10))
-            if self.l.isSet():
-                text = font.render("Wins "+ str(self.winner), 1, (255,255,255), True)
-                screen.blit(text, (self.weight/2 -100, self.height/2 - 50))
-                i = 0
+            if s:
+                # update plyers and projectiles
                 for p in players:
-                    p.id = i 
-                    p.x = -20
-                    p.y = -20
-                    i = i + 1
-            pygame.display.update()
-            dt = clock.tick(30)
+                    p.update(events, dt)
+                for p in projectiles:
+                    p.update(events,dt)
             
+                # draw players
+                screen.fill((30, 30, 30))
+
+                players.draw(screen)
+                projectiles.draw(screen)
+
+                # draw winner
+                text = score.render(str(self.winner) + "  wins", 1, (255,255,255), False)
+                screen.blit(text, (self.weight - 110 , 10))
+
+                # draw score
+                y = 10
+                i = self.num
+                for s in players:
+                    if i == 0:
+                        break
+                    screen.blit(s.text, (self.weight - 80 , y + 20))
+                    y = y + 20
+                    i = i -1
+
+                pygame.display.update()
                 
-        self.q.set()           
-        self.udp.close()
+                
+                dt = clock.tick(30)
+                
+   
+        
 
     def tcp_sending(self):
+        
         while True:
             data = b'[TCP CONNECTED TO SERVER]'
-            self.tcp.send(data)
             if self.q.isSet():
                 break
+            self.tcp.send(data)
+            

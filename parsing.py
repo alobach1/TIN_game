@@ -9,7 +9,7 @@ def unpackeging(l,data):
     strct = '1s 2s 1s 1s 2s 2s ' 
     s = '1s 1s 2s 2s' 
     o = '1s'
-    print(data)
+    #print(data)
     l = len(data)
     data, l , o , number_pr = searching(data, l , o)
         
@@ -73,7 +73,7 @@ def searching(data, l , o):
             break
         n.append(start)
         start += len(b'\x00')
-    print(n)
+    #print(n)
     number_pl= 0
     for i in n:
         if (i == 9) or (i == 15) or (i== 21) or (i ==27) or (i == 33) or (i == 39) or (i== 45) or (i == 51):
